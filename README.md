@@ -1,6 +1,6 @@
 hdf5Lib
 =======
-Small Python3 script I have written for personal use when loading data stored in multiple HDF5 subfiles, as is the case in many cosmological simulations I have encountered. It contains a single class [`read_hdf5`](https://github.com/VictorForouhar/hdf5Lib/blob/07ba32dcfc3eb546a94cfd6bb38628a3ea2a2262/hdf5Lib.py#L7) which creates an object from which one can access information stored in one or more HDF5 files. This allows for data to be loaded sequentially or in parallel (via [multiprocessing](https://docs.python.org/3/library/multiprocessing.html) module).
+Small Python3 script I have written for personal use when loading data stored in multiple HDF5 subfiles, as is the case in many cosmological simulations I have encountered. It contains a single class [`read_hdf5`](https://github.com/VictorForouhar/hdf5Lib/blob/07ba32dcfc3eb546a94cfd6bb38628a3ea2a2262/hdf5Lib.py#L7) which creates an object from which one can access information stored in one or more HDF5 files. This allows for data to be loaded sequentially or in parallel (via [multiprocessing](https://docs.python.org/3/library/multiprocessing.html) module). Loading in parallel can drastically cut down on loading times, particularly when the files are not in cache. This is because most of the time is spent idling waiting for the disk.
 
 Usage
 -------
