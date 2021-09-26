@@ -8,11 +8,30 @@ class read_hdf5:
 
     def __init__(self, base_path, is_split = True, number_subfiles = None,
                 progress_bar = False):
+        """
+        Initiates object used to load data from a single or multiple HDF5 files.
 
-        '''Creates object used to load data from an HDF5 file. This can handle single
-        files or files that have been split up into several subfiles. base_path should
-        contain an integer suffix %d to differentiate between subfiles (even if single
-        subfile). This is used to generate list of paths to file(s).'''
+        Parameters 
+        ----------
+        base_path : str or list
+            Path to the file(s) to load the data from. If several files are present, one 
+            can use a str with %d formatter or list containing paths to all 
+            individual files.
+        is_split : bool
+            Specifies whether the data is split across several files. Default value is
+            True.
+        number_subfiles : int
+            Number of files the data to load is split across. If None, it. 
+            Defaults to None
+        progress_bar : bool
+            Specifies whether a bar showing the progress of data loading is shown.
+            Default value is False.
+        
+        Returns 
+        ----------
+        object
+            Object allowing the user to load data from via its methods.
+        """
 
         # Determine whether TQDM progress bar is displayed when loading.
         self.disable_progress_bar = not progress_bar
@@ -36,8 +55,23 @@ class read_hdf5:
         self.file_list = [base_path%i for i in range(self.number_subfiles)]
     
     def get_data_single_subfile(self, dataset, subfile_path):
-        '''Method returns the specified dataset retrieved from a single
-        subfile.'''
+        """
+        Returns the specified dataset retrieved from a single
+        subfile.
+
+        Parameters 
+        ----------
+        dataset: str
+            Name of the dataset to retrieve
+        subfile_path : str
+            Path to the file we want to retrive the data from.
+
+        Returns
+        ----------
+        ndarray:
+            The data is returned as a numpy array of dimensions equal to
+            the data.
+        """
 
         #===============================================================
         # Open subfile and try loading the specified data 
@@ -49,9 +83,25 @@ class read_hdf5:
                 return None
 
     def get_data_parallel(self, dataset, number_workers = None):
-        '''Load data from a specified dataset in parallel using several cores.
-        The number of workers used for this defaults to the maximum available
-        number of cores.'''
+        
+        """
+        Loads data from several HDF5 files in parallel. 
+
+        Parameters
+        ----------
+        dataset : str
+            Name of the dataset to get the data from.
+        number_workers : int
+            Number of processes used in parallel to load the data. If none are
+            specified, it defaults to the maximum available number in current
+            process. Note this can only be used for data that is split across
+            multiple HDF5 files.
+
+        Returns
+        ----------
+        ArrayType
+            Array containing all t
+        """
 
         #===============================================================
         # Setting number of workers used to load data
@@ -122,8 +172,21 @@ class read_hdf5:
 
     def get_data(self, dataset):
 
-        '''Reads all of the data of the specified dataset, even if split
-        into several subfiles.'''
+        """
+        Returns an array containing the specified data entries.
+
+        Parameters
+        ----------
+        dataset : str
+            Name of the dataset
+
+        Returns
+        ----------
+        array_type
+            An array holding all the data. This includes data that has been
+            split up into several files.
+
+        """
 
         #===============================================================
         # Get required dimensions of output array to create it 
@@ -165,10 +228,23 @@ class read_hdf5:
         return out
 
     def print_entries(self, dataset = None, filenum = 0):
-        '''Prints the data entries available for the specified
-        dataset, or if not, the base hdf5 tree. If file split over several
-        subfiles it assumes first subfile contains the same attributes as 
-        the rest.'''
+        """
+        Method used to inspect available datasets in the specified 
+        file. 
+
+        Parameters
+        -----------
+        dataset : str
+            The name of the group we are interested in obtaining the 
+            data entries from. If None, it returns the groups of the file.
+        filenum : int
+            Selects which file of the list. Defaults to the first one. 
+
+        Returns
+        -----------
+        int
+            On sucessful execution, returns 0.
+        """
 
         with h5py.File(self.file_list[filenum],'r') as file:
 
@@ -193,7 +269,23 @@ class read_hdf5:
         return 0
 
     def print_attributes(self, dataset, filenum = 0):
-        '''Prints the list of attributes available for the specified entry.'''
+        """
+        Method used to print a list of attributes available for a given
+        data entry. 
+
+        Parameters
+        -----------
+        dataset : str
+            The name of the group we are interested in obtaining the 
+            attribute list from. 
+        filenum : int
+            Selects which file of the list. Defaults to the first one. 
+
+        Returns
+        -----------
+        int
+            On sucessful execution, returns 0.
+        """
 
         with h5py.File(self.file_list[filenum],'r') as file:
 
