@@ -12,7 +12,7 @@ class read_hdf5:
 
         Parameters 
         ----------
-        base_path : str or list
+        base_path : str or list of str
             Path to the file(s) to load the data from. If data is split into several 
             files, one can use a str with %d formatter or list containing paths to all 
             individual files.
