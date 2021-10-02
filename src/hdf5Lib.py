@@ -1,5 +1,4 @@
 import h5py
-import warnings
 import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
@@ -227,15 +226,14 @@ class read_hdf5:
 
     def print_entries(self, dataset = None, filenum = 0):
         """
-        Method used to inspect available datasets in the specified 
-        file. 
+        Prints available datasets/groups in the specified file. 
 
         Parameters
         -----------
-        dataset : str
+        dataset : str, opt
             The name of the group we are interested in obtaining the 
             data entries from. If None, it returns the groups of the file.
-        filenum : int
+        filenum : int, opt
             Selects which file of the list. Defaults to the first one. 
 
         Returns
@@ -268,39 +266,56 @@ class read_hdf5:
 
     def print_attributes(self, dataset, filenum = 0):
         """
-        Method used to print a list of attributes available for a given
-        data entry. 
+        Prints a list of attributes available for the specified dataset/group. 
 
         Parameters
         -----------
         dataset : str
-            The name of the group we are interested in obtaining the 
+            The name of the group/dataset we are interested in obtaining the 
             attribute list from. 
-        filenum : int
-            Selects which file of the list. Defaults to the first one. 
+        filenum : int, opt
+            Selects which file of the list is used to get the attributes from. Defaults to the first one. 
 
         Returns
         -----------
         int
-            On sucessful execution, returns 0.
+            Returns 0 on sucessful execution.
         """
 
         with h5py.File(self.file_list[filenum],'r') as file:
 
             attribute_list = file[dataset].attrs.keys()
 
-            print ('-----------------------------------')
+            print ('-'*40)
             # Print
             for attribute in attribute_list:
                 print (attribute)
             
-            print ('-----------------------------------')
+            print ('-'*40)
             print ()
             print ('Number of attributes: %d'%len(attribute_list))
 
         return 0
 
     def get_attribute(self, dataset, attribute, filenum=0):
+        """
+        Returns the value of the specified attribute in the given dataset.
+
+        Parameters
+        -----------
+        dataset : str
+            Dataset/Group we are interest in obtaining the attribute from
+        attribute : str
+            Name of the attribute we want to get 
+        filenum : int, optional
+            Number of the file we use to obtain the information from
+
+        Returns
+        -----------
+        AttributeType
+            The attribute value/object. 
+        """
+        
         with h5py.File(self.file_list[filenum],'r') as file:
             attribute_value = file[dataset].attrs[attribute]
         return attribute_value
