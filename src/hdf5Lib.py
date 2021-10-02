@@ -14,16 +14,16 @@ class read_hdf5:
         Parameters 
         ----------
         base_path : str or list
-            Path to the file(s) to load the data from. If several files are present, one 
-            can use a str with %d formatter or list containing paths to all 
+            Path to the file(s) to load the data from. If data is split into several 
+            files, one can use a str with %d formatter or list containing paths to all 
             individual files.
-        is_split : bool
+        is_split : bool, optional
             Specifies whether the data is split across several files. Default value is
             True.
-        number_subfiles : int
+        number_subfiles : int, optional
             Number of files the data to load is split across. If None, it. 
             Defaults to None
-        progress_bar : bool
+        progress_bar : bool, optional
             Specifies whether a bar showing the progress of data loading is shown.
             Default value is False.
         
@@ -69,8 +69,7 @@ class read_hdf5:
         Returns
         ----------
         ndarray:
-            The data is returned as a numpy array of dimensions equal to
-            the data.
+            Array containing all entries of the requested dataset.
         """
 
         #===============================================================
@@ -100,7 +99,7 @@ class read_hdf5:
         Returns
         ----------
         ArrayType
-            Array containing all t
+            Array containing all entries of the requested dataset.
         """
 
         #===============================================================
@@ -111,8 +110,8 @@ class read_hdf5:
         # of cores available.
         if number_workers is not None:
             if number_workers > self.number_cores:
-                raise ValueError('Specified number of workers (%d) is larger \n'%number_workers +\
-                'than currently available (%d)'%self.number_cores)
+                raise ValueError(f"Specified number of workers ({number_workers}) is larger \n" +\
+                                 f"than currently available ({self.number_cores})")
 
         #===============================================================
         # Loading data in parallel
@@ -131,12 +130,11 @@ class read_hdf5:
         # Remove subfile entries which contain no data 
         data_list = [subfile_entry for subfile_entry in data_list if subfile_entry is not None]
 
-        # Check if list is empty (i.e. it only contained  None entries). If so, it may
+        # Check if list is empty (i.e. it only contained None entries). If so, it may
         # mean that the dataset name is incorrect or that this particular datafile doesn't
         # contain the information we are interested in.
         if not data_list:
-            warnings.warn('No data was found for specified entry. This may be due to incorrect name or because the data is not available in the given subfiles.')
-            return None
+            raise KeyError(f"No data was found for specified dataset ({dataset}) in any of the files.")
 
         #===============================================================
         # Merging list of arrays into a single array
