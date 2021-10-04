@@ -1,6 +1,11 @@
 hdf5Lib
 =======
-Small Python3 script I have written for personal use when loading data stored in multiple HDF5 subfiles, as is the case in many cosmological simulations I have encountered. It contains a single class [`read_hdf5`](https://github.com/VictorForouhar/hdf5Lib/blob/07ba32dcfc3eb546a94cfd6bb38628a3ea2a2262/hdf5Lib.py#L7) which creates an object from which one can access information stored in one or more HDF5 files. This allows for data to be loaded sequentially or in parallel (via [multiprocessing](https://docs.python.org/3/library/multiprocessing.html) module). Loading in parallel can drastically cut down on loading times, particularly when the files are not in cache. This is because most of the time is spent idling waiting for the disk.
+Small Python3 script I have written for personal use when loading data stored in multiple HDF5 subfiles, as is the case in many cosmological simulations I have encountered. It contains a single class [`read_hdf5`](https://github.com/VictorForouhar/hdf5Lib/blob/07ba32dcfc3eb546a94cfd6bb38628a3ea2a2262/hdf5Lib.py#L7) which creates an object from which one can access information stored in one or more HDF5 files. This allows for data to be loaded sequentially or in parallel (via [multiprocessing](https://docs.python.org/3/library/multiprocessing.html) module). Loading in parallel can drastically cut down on loading times, particularly when the files are not in cache.
+
+Requirements
+=======
+This package requires the following modules:[`h5py`](https://docs.h5py.org/en/stable/)(2.10.0), [`numpy`](https://numpy.org/doc/stable/) (1.21.1), [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html) and [`tqdm`](https://tqdm.github.io/) (4.62.0). This code has only been tested using those versions.
+
 
 Usage
 -------
