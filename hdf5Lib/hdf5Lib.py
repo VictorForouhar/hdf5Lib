@@ -156,31 +156,6 @@ class read_hdf5:
         data_array = np.concatenate(data_list)
 
         return data_array 
-    
-    def get_data_dimensions(self, dataset):
-        '''Method goes over all (sub)files, collecting the number of entries
-        associated to specified dataset, as well as the number of columns and 
-        datatype. Returns and '''
-
-        array_dimensions = None
-        for i, file_name in enumerate(tqdm(self.file_list,disable=self.disable_progress_bar)):
-            with h5py.File(file_name, 'r') as file:
-                
-                # Testing whether dataset exists in this subfile. If
-                # not, skip.
-                try: 
-                    dims = file[dataset].shape
-                except:
-                    continue
-                    
-                # Just done for the first file
-                if (array_dimensions == None):
-                    array_dimensions = list(dims)
-                    array_dtype      = file[dataset].dtype
-                else:
-                    array_dimensions[0] += dims[0]
-
-        return (array_dimensions, array_dtype)
 
     def get_data(self, dataset):
 
@@ -201,43 +176,33 @@ class read_hdf5:
         """
 
         #===============================================================
-        # Get required dimensions of output array to create it 
-        #===============================================================
-        array_dimensions, array_dtype = self.get_data_dimensions(dataset)
-
-        # Create the array to hold data
-        out = np.ndarray(array_dimensions,dtype = array_dtype)
-        
-        #===============================================================
-        # Load data sequentially
+        # Loading data sequentially
         #===============================================================
         
-        # Cycle through opened files and add data in the positon they
-        # should be located in
-        offsets = [0,0]
+        # Iteratively go over each available file
+        data_list = []
+        for file_path in self.file_list:
+            data_list.append(self.get_data_single_subfile(dataset, file_path))
+
+        #===============================================================
+        # Removing empty entries
+        #===============================================================
         
-        for file_name in tqdm(self.file_list, disable = self.disable_progress_bar):
+        # Remove subfile entries which contain no data 
+        data_list = [subfile_entry for subfile_entry in data_list if subfile_entry is not None]
 
-            # Open file and get the dataset data
-            with h5py.File(file_name, 'r') as file:
+        # Check if list is empty (i.e. it only contained None entries). If so, it may
+        # mean that the dataset name is incorrect or that this particular datafile doesn't
+        # contain the information we are interested in.
+        if not data_list:
+            raise KeyError(f"No data was found for specified dataset ({dataset}) in any of the files.")
 
-                # Testing whether dataset exists in this subfile. If
-                # not, skip.
-                try: 
-                    file[dataset]
-                except:
-                    continue
-                    
-                # Update upper value of the offset
-                offsets[1] = offsets[0] + file[dataset].shape[0]
-               
-                # Store data in the array to be returned
-                file[dataset].read_direct(out[offsets[0]:offsets[1]])
-                
-                # Update lower value of the offset
-                offsets[0] = offsets[1]  
+        #===============================================================
+        # Merging list of arrays into a single array
+        #===============================================================
+        data_array = np.concatenate(data_list)
 
-        return out
+        return data_array 
 
     def print_entries(self, dataset = None, filenum = 0):
         """
