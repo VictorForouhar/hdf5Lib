@@ -9,7 +9,7 @@ This package requires the following modules:[`h5py`](https://docs.h5py.org/en/st
 
 Usage
 -------
-Check the example sections to access the test HDF5 files.
+Check the ./examples/ folder to access the test HDF5 files. An interactive, jupyter-notebook version of the tutorial is available in the same location.
 
 ```python
 import hdf5Lib
@@ -24,6 +24,7 @@ file.print_entries('dataset_a')
 # Prints entries accesible in dataset_a:
 
 file.print_attributes('dataset_a')
+# Prints attributes of dataset_a
 ```
 
 If we want to get the value of an attribute, we simply specify the dataset and associated attribute we are interested in retrieving.
