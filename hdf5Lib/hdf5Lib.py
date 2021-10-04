@@ -38,21 +38,32 @@ class read_hdf5:
         # Number of available cores
         self.number_cores = mp.cpu_count()
 
-        if is_split == True:
-
-            # Check whether subfiles have been specified if there are supposed to be 
-            # subfiles
-            if number_subfiles is None:
-                print('No number of subfiles have been specifed, despite \n',
-                      'please do so now. Goodbye!')
-            self.number_subfiles = number_subfiles
+        # If base_path is a list, then  
+        if isinstance(base_path, list):
+            self.file_list       = base_path
+            self.number_subfiles = len(self.file_list)
         else:
-            # Special case of a single file.
-            self.number_subfiles = 1
+            if is_split:
 
-        # List of paths pointing to each file to load
-        self.file_list = [base_path%i for i in range(self.number_subfiles)]
-    
+                # Check whether subfiles have been specified if there are supposed to be 
+                # subfiles
+                if number_subfiles is None:
+                    raise ValueError('No number of subfiles have been specifed even when \n' 
+                                   + 'is supposedly split.')
+                else:
+                    self.number_subfiles = number_subfiles
+            
+            else:
+                # Special case of a single file.
+                self.number_subfiles = 1
+
+            if '%' in base_path:
+                # List of paths pointing to each file to load
+                self.file_list = [base_path%i for i in range(self.number_subfiles)]
+            else:
+                self.file_list = [base_path]
+        print (self.file_list)
+            
     def get_data_single_subfile(self, dataset, subfile_path):
         """
         Returns the specified dataset retrieved from a single
