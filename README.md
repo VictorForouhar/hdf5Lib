@@ -13,6 +13,7 @@ Check the ./examples/ folder to access the test HDF5 files. An interactive, jupy
 
 ```python
 import hdf5Lib
+path_to_file = './examples/single_file/file.hdf5'
 file = hdf5Lib.read_hdf5(path_to_file)
 ```
 Once the object has been created, we can check what data entries are in the file and its attributes.
