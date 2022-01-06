@@ -1,0 +1,23 @@
+[metadata]
+name = hdf5Lib
+version = 0.0.1
+author = Victor Forouhar Moreno
+author_email = victor.j.forouhar@durham.ac.uk
+description = Python3 package used for paralell reading of HDF5 files that have been split into several files.
+long_description = file: README.md
+long_description_content_type = text/markdown
+url = https://github.com/VictorForouhar/hdf5Lib
+project_urls =
+    Bug Tracker = https://github.com/VictorForouhar/hdf5Lib/issues
+classifiers =
+    Programming Language :: Python :: 3
+    Operating System :: OS Independent
+
+[options]
+package_dir =
+    = src
+packages = find:
+python_requires = >=3.6
+
+[options.packages.find]
+where = src
