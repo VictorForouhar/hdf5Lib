@@ -4,7 +4,8 @@ from tqdm import tqdm
 import multiprocessing as mp
 
 class read_hdf5:
-
+    # TODO: consider adding a flag indicating whether parallel or serial 
+    # loading is used in __getitem__ method.
     def __init__(self, base_path, is_split = True, number_subfiles = None,
                 progress_bar = False):
         """
@@ -67,7 +68,10 @@ class read_hdf5:
             # add single subfile. 
             else:
                 self.file_list = [base_path]
-            
+        
+        # Dict holding data retrieved by groups
+        self.data = {} 
+
     def get_data_single_subfile(self, dataset, subfile_path):
         """
         Returns the specified dataset retrieved from a single
@@ -202,8 +206,21 @@ class read_hdf5:
         #===============================================================
         data_array = np.concatenate(data_list)
 
-        return data_array 
+        return data_array
 
+
+    def load(self, group):
+        if group not in self.data:
+            # TODO: I can add self.parallel_mode = 1 to 
+            # determine whether get_data or get_data_parallel is used.
+            # For now default to parallel.
+
+            self.data[group] = self.get_data_parallel(group)
+        return self.data[group]
+    
+    def __getitem__(self,group):
+        return self.load(group)
+    
     def print_entries(self, dataset = None, filenum = 0):
         """
         Prints available datasets/groups in the specified file. 
