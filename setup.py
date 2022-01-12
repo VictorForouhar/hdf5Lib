@@ -9,10 +9,8 @@ setup(name='hdf5Lib',
       author_email='victor.j.forouhar@durham.ac.uk',
       url='https://github.com/VictorForouhar/hdf5Lib',
       packages=['hdf5Lib'],
-    #   install_requires=[
-    #         'astropy>=4.1',
-    #         'h5py==3.1.0',
-    #         'matplotlib>=3.3.4',
-    #         'numpy>=1.19.5'
-    #   ],
+      install_requires=[
+            'h5py==3.1.0',
+            'numpy>=1.19.5'
+      ],
      )
