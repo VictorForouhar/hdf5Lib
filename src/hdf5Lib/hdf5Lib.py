@@ -95,6 +95,10 @@ class read_hdf5:
                 return file[dataset][()]
             except:
                 return None
+    
+    #===============================================================
+    # Methods to retrieve data
+    #===============================================================
 
     def get_data_parallel(self, dataset, number_workers = None):
         
@@ -207,17 +211,35 @@ class read_hdf5:
 
 
     def load(self, group):
-        if group not in self.data:
-            # TODO: I can add self.parallel_mode = 1 to 
-            # determine whether get_data or get_data_parallel is used.
-            # For now default to parallel.
+        '''
+        Loads all data belonging to specified group.
 
-            self.data[group] = self.get_data_parallel(group)
+        Parameters
+        -----------
+        group : str
+            Name of the group of interest in the hdf5 file.
+        
+        Returns
+        -----------
+        ArrayType
+            Data belonging to specified group
+        '''
+        # Check if it has been loaded before
+        if group not in self.data:
+            if self._parallel == True:
+                self.data[group] = self.get_data_parallel(group)
+            else:
+                self.data[group] = self.get_data(group)
+        
         return self.data[group]
     
     def __getitem__(self,group):
         return self.load(group)
     
+    #===============================================================
+    # Helper functions to inspect data structure
+    #===============================================================
+
     def print_entries(self, dataset = None, filenum = 0):
         """
         Prints available datasets/groups in the specified file. 
