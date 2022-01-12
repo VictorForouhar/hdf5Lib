@@ -1,12 +1,11 @@
 import h5py
 import numpy as np
-from tqdm import tqdm
 import multiprocessing as mp
 
 class read_hdf5:
-
-    def __init__(self, base_path, is_split = True, number_subfiles = None,
-                progress_bar = False):
+    # TODO: consider adding a flag indicating whether parallel or serial 
+    # loading is used in __getitem__ method.
+    def __init__(self, base_path, number_files = None, parallel = True):
         """
         Initiates object used to load data from a single or multiple HDF5 files.
 
@@ -16,15 +15,11 @@ class read_hdf5:
             Path to the file(s) to load the data from. If data is split into several 
             files, one can use a str with %d formatter or list containing paths to all 
             individual files.
-        is_split : bool, optional
-            Specifies whether the data is split across several files. Default value is
-            True.
-        number_subfiles : int, optional
-            Number of files the data to load is split across. If None, it. 
-            Defaults to None
-        progress_bar : bool, optional
-            Specifies whether a bar showing the progress of data loading is shown.
-            Default value is False.
+        number_files : int, optional
+            Number of files the data to load is split across. Defaults to None
+        parallel : Bool
+            Flag indicating whether data is loaded serially or in parallel. Only
+            data split over multiple files is supported by parallel loading.
         
         Returns 
         ----------
@@ -32,42 +27,47 @@ class read_hdf5:
             Object allowing the user to load data from via its methods.
         """
 
-        # Determine whether TQDM progress bar is displayed when loading.
-        self.disable_progress_bar = not progress_bar
+        #=====================================================
+        # Determining number of files to read
+        #=====================================================
 
-        # Number of available cores
-        self.number_cores = mp.cpu_count()
-
-        # If base_path is a list, use it to get the file_list and check how many files there are. 
+        # If base_path is a list, use it directly to define self.file_list and
+        # get number of files directly from it. 
         if isinstance(base_path, list):
-            self.file_list       = base_path
-            self.number_subfiles = len(self.file_list)
+            self.file_list    = base_path
+            self.number_files = len(self.file_list)
 
-        # If base_path is a string, generate file_list based on whether it is split or not.  
+        # If base_path is a string, generate file_list based on whether it allows for
+        # string formatting or not.  
         else:
-            # If multiple files are to be loaded, generate the file_list with the number of 
-            # entries equal to the number of subfiles specified by the user.
-            if is_split:
-
-                # Raise error if no subfiles have been specified
-                if number_subfiles is None:
-                    raise ValueError('No number of subfiles have been specifed even when \n' 
-                                   + 'is supposedly split.')
-                else:
-                    self.number_subfiles = number_subfiles
-            
-            # If not split, then we have a single file by definition 
-            else:
-                self.number_subfiles = 1
-            # Use list comprehension to generate file_list if possible (requires 
-            # string formatting)
             if '%' in base_path:
-                self.file_list = [base_path%i for i in range(self.number_subfiles)]
-            # If not string formatting present in string (e.g. single file), then simply
-            # add single subfile. 
-            else:
-                self.file_list = [base_path]
-            
+                try: 
+                    self.file_list = [base_path%i for i in range(number_files)]
+                    self.number_files = number_files
+                except:
+                    raise ValueError('Number of files not specified, despite using string ' \
+                     + 'formated base_path.')
+            else: 
+                self.file_list    = [base_path] 
+                self.number_files = 1 
+        
+        #=====================================================
+        # Settings regarding paralell loading
+        #=====================================================
+        
+        # Number of available cores
+        self._number_cores = mp.cpu_count()
+        
+        # Currently only split files are compatible with parallel 
+        # loading. In future I might add support for single files
+        # (e.g. via array slices)
+        if self.number_files == 1: self._parallel = False
+        else: self._parallel = parallel
+        
+
+        # Dict holding data retrieved by groups
+        self.data = {} 
+
     def get_data_single_subfile(self, dataset, subfile_path):
         """
         Returns the specified dataset retrieved from a single
@@ -94,6 +94,10 @@ class read_hdf5:
                 return file[dataset][()]
             except:
                 return None
+    
+    #===============================================================
+    # Methods to retrieve data
+    #===============================================================
 
     def get_data_parallel(self, dataset, number_workers = None):
         
@@ -123,9 +127,9 @@ class read_hdf5:
         # Check if requested number of workers does not exceed number
         # of cores available.
         if number_workers is not None:
-            if number_workers > self.number_cores:
+            if number_workers > self._number_cores:
                 raise ValueError(f"Specified number of workers ({number_workers}) is larger \n" +\
-                                 f"than currently available ({self.number_cores})")
+                                 f"than currently available ({self._number_cores})")
 
         #===============================================================
         # Loading data in parallel
@@ -135,7 +139,7 @@ class read_hdf5:
         with mp.Pool(number_workers) as pool:
             # Need to use starmap to employ multiple arguments in function 
             data_list = pool.starmap(self.get_data_single_subfile, 
-                                     zip([dataset] * self.number_subfiles, self.file_list))
+                                     zip([dataset] * self.number_files, self.file_list))
 
         #===============================================================
         # Removing empty entries
@@ -202,7 +206,38 @@ class read_hdf5:
         #===============================================================
         data_array = np.concatenate(data_list)
 
-        return data_array 
+        return data_array
+
+
+    def load(self, group):
+        '''
+        Loads all data belonging to specified group.
+
+        Parameters
+        -----------
+        group : str
+            Name of the group of interest in the hdf5 file.
+        
+        Returns
+        -----------
+        ArrayType
+            Data belonging to specified group
+        '''
+        # Check if it has been loaded before
+        if group not in self.data:
+            if self._parallel == True:
+                self.data[group] = self.get_data_parallel(group)
+            else:
+                self.data[group] = self.get_data(group)
+        
+        return self.data[group]
+    
+    def __getitem__(self,group):
+        return self.load(group)
+    
+    #===============================================================
+    # Helper functions to inspect data structure
+    #===============================================================
 
     def print_entries(self, dataset = None, filenum = 0):
         """
