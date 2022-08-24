@@ -15,7 +15,9 @@ class read_hdf5:
         into several files, one can use a str with %d formatter or 
         list containing all paths to individual files.
     number_files : int, opt
-        Number of files the data to load is split across. Defaults to None
+        Number of files the data to load is split across. Defaults to None, 
+        in which case the code tries to obtain it from the number of entries
+        in base_path list, if possible.
     parallel : bool, opt
         Flag indicating whether data is loaded serially or in parallel. Only
         data split over multiple files is supported by parallel loading. 
@@ -57,7 +59,7 @@ class read_hdf5:
         # Settings regarding paralell loading
         #=====================================================
         
-        # Number of available cores
+        # Maximum number of available workers 
         self._max_number_workers = mp.cpu_count()
         
         # Only split files are compatible with parallel loading.
@@ -81,7 +83,7 @@ class read_hdf5:
 
     def _get_data_single_subfile(self, dataset, subfile_path):
         '''
-        Returns the specified dataset retrieved from a single
+        Returns the specified dataset loaded from a single
         subfile.
 
         Parameters 
@@ -110,9 +112,9 @@ class read_hdf5:
     
     def _merge_data(self, data_list, dataset):
         '''
-        Processes data loaded in in the read routines. First
-        removes empty entries and the concatenates all remaining
-        entries to return a single np.ndarray
+        Processes data loaded by the read routines. First
+        removes empty entries and then concatenates all remaining
+        ones to return a single np.ndarray
 
         Parameters
         ----------
@@ -129,17 +131,15 @@ class read_hdf5:
         '''
 
         # Remove entries which contain no data 
-        data_list = [subfile_entry for subfile_entry in data_list if subfile_entry is not None]
+        data_list = [entry for entry in data_list if entry is not None]
 
         # Check if list is empty (i.e. it only contained None entries). If so, it may
         # mean that the dataset name is incorrect or that this particular datafile doesn't
         # contain the information we are interested in.
         if not data_list:
             raise KeyError(f"No data was found for specified dataset ({dataset}) in any of the files.")
-
-        #===============================================================
+   
         # Merging list of arrays into a single array
-        #===============================================================
         return np.concatenate(data_list)
     
     def _get_data_serial(self, dataset):
@@ -204,7 +204,7 @@ class read_hdf5:
         # Loading data in parallel
         #===============================================================
         
-        # Create a worker pool and use starmap to use multiple function
+        # Create a worker pool and use starmap to map multiple function
         # arguments
         with mp.Pool(number_workers) as pool:
             data_list = pool.starmap(self._get_data_single_subfile, 
