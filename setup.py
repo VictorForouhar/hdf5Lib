@@ -11,6 +11,7 @@ setup(name='hdf5Lib',
       packages=['hdf5Lib'],
       install_requires=[
             'h5py==3.1.0',
-            'numpy>=1.19.5'
+            'numpy>=1.19.5',
+            'tqdm>=4.62.3'
       ],
      )
