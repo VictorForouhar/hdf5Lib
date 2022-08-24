@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
 
-class read_hdf5:
+class Read:
     '''
     Initialises an object used to load data from single or multiple
     HDF5 files, with parallel capabilities in the latter case.
