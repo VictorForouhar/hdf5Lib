@@ -236,7 +236,15 @@ class Read:
             self._data[dataset] = self._get_data_parallel(dataset) if self._parallel else self._get_data_serial(dataset)
         
         return self._data[dataset]
-    
+
+    #===============================================================
+    # Enter and exit methods 
+    #===============================================================
+    def __enter__(self):
+        return self
+    def __exit__(self,*args, **kwargs):
+        del self
+
     #===============================================================
     # Helper functions to inspect data structure
     #===============================================================
