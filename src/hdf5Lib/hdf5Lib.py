@@ -235,7 +235,7 @@ class Read:
         if dataset not in self._data:
             self._data[dataset] = self._get_data_parallel(dataset) if self._parallel else self._get_data_serial(dataset)
         
-        return self._data[dataset]
+        return self._data[dataset].copy()
 
     #===============================================================
     # Enter and exit methods 
