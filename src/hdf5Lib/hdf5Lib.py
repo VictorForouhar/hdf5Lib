@@ -234,8 +234,9 @@ class Read:
         # Check if it has been loaded before. If not, load.
         if dataset not in self._data:
             self._data[dataset] = self._get_data_parallel(dataset) if self._parallel else self._get_data_serial(dataset)
+            self._data[dataset].flags.writeable = False # Make it read only
         
-        return self._data[dataset].copy()
+        return self._data[dataset]
 
     #===============================================================
     # Enter and exit methods 
