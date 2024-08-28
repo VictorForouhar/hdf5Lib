@@ -10,7 +10,7 @@ setup(name='hdf5Lib',
       url='https://github.com/VictorForouhar/hdf5Lib',
       packages=['hdf5Lib'],
       install_requires=[
-            'h5py==3.1.0',
+            'h5py',
             'numpy>=1.19.0',
             'tqdm>=4.62.0'
       ],
