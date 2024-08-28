@@ -1,0 +1,14 @@
+[build-system]
+requires = [
+    "h5py",
+    "numpy",
+    "tqdm",
+    "hatchling"
+    ]
+build-backend = "hatchling.build"
+
+[project]
+name = "hdf5Lib"
+version = "2022.8"
+author = "Victor Forouhar Moreno"
+author_email = "forouhar@strw.leidenuniv.nl"
